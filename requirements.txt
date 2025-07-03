@@ -1,0 +1,10 @@
+apache-airflow==3.0.2
+--constraint https://raw.githubusercontent.com/apache/airflow/constraints-3.0.2/constraints-3.12.txt
+google-api-python-client>=2.70.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=0.5.0
+gspread>=5.7.0
+psycopg2-binary>=2.9.6
+mysql-connector-python>=8.0.33
+pandas>=2.0.0
+apache-airflow-providers-fab>=1.0.0
