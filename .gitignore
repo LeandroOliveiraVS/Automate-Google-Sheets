@@ -8,12 +8,12 @@ credentials/
 *.json  # Ignora todos os JSONs, ajuste se necessário (ex.: exceto config/sheets_config.json)
 
 # Arquivos temporários
-tmp/
-*.csv
+tests/
 
 # Airflow
 airflow/logs/
 airflow/airflow.db
+airflow/simple_auth_manager_passwords.json
 airflow/plugins/
 
 # IDEs e editores

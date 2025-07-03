@@ -13,7 +13,7 @@ default_args = {
     'owner': 'user',
     'depends_on_past': False,
     'email_on_failure': False,
-    'email': ['leandro.oliveira@maisvidaservicos.com.br']
+    'email': ['your_email@email.com']
 }
 
 # MySQL configuration
@@ -38,7 +38,7 @@ with open(CONFIG_PATH, 'r') as f:
 with DAG (
     dag_id = 'recebimentos_dag',
     default_args = default_args,
-    description='DAG to process recebimentos data from Google Sheets to MySQL',
+    description='DAG to process Event Registration data from Google Sheets to MySQL',
     schedule='@daily',
     start_date=datetime(2025, 1, 1),
     catchup=False
@@ -51,7 +51,7 @@ with DAG (
             'credentials_path': CREDENTIALS_PATH,
             'sheet_id': sheet['sheet_id'],
             'worksheet_name': sheet['worksheet_name'],
-            'output_path': os.path.join(TEMP_DIR, 'recebimentos.csv'),
+            'output_path': os.path.join(TEMP_DIR, 'Event_Registration.csv'),
             'uncolumns': sheet['uncolumns']
         }
     )
@@ -60,10 +60,10 @@ with DAG (
         task_id = 'transform_data',
         python_callable = Transform_Data_1,
         op_kwargs={
-            'input_path': os.path.join(TEMP_DIR, 'recebimentos.csv'),
+            'input_path': os.path.join(TEMP_DIR, 'Event_Registration.csv'),
             'key_column': sheet['key_column'],
             'mysql_table': sheet['mysql_table'],
-            'output_path': os.path.join(TEMP_DIR, 'trans_recebimentos.csv'),
+            'output_path': os.path.join(TEMP_DIR, 'trans_Event_Registration.csv'),
             'uncolumns': sheet['uncolumns'],
             'dates': sheet['dates'],
             'hours': sheet['hours']
@@ -75,10 +75,10 @@ with DAG (
         python_callable = compare_data,
         op_kwargs={
             'mysql_config': mysql_config,
-            'input_path': os.path.join(TEMP_DIR, 'trans_recebimentos.csv'),
+            'input_path': os.path.join(TEMP_DIR, 'trans_Event_Registration.csv'),
             'key_column': sheet['key_column'],
             'mysql_table': sheet['mysql_table'],
-            'output_path': os.path.join(TEMP_DIR, 'missing_recebimentos.csv'),
+            'output_path': os.path.join(TEMP_DIR, 'missing_Event_Registration.csv'),
         }
     )
 
@@ -87,7 +87,7 @@ with DAG (
         python_callable = load_data_to_mysql,
         op_kwargs={
             'mysql_config': mysql_config,
-            'input_path': os.path.join(TEMP_DIR, 'missing_recebimentos.csv'),
+            'input_path': os.path.join(TEMP_DIR, 'missing_Event_Registration.csv'),
             'mysql_table': sheet['mysql_table'],
             'columns': sheet['columns']
         }
