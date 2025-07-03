@@ -1,0 +1,27 @@
+# Ambiente virtual
+.venv/
+__pycache__/
+*.pyc
+
+# Credenciais e arquivos sensíveis
+credentials/
+*.json  # Ignora todos os JSONs, ajuste se necessário (ex.: exceto config/sheets_config.json)
+
+# Arquivos temporários
+tmp/
+*.csv
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+airflow/plugins/
+
+# IDEs e editores
+.idea/  # Para IntelliJ/PyCharm
+*.swp   # Para Vim
+*.sublime-workspace
+
+# Arquivos gerados
+*.log
+*.bak
+*.tmp

@@ -1,0 +1,27 @@
+[
+    {
+        "sheet_name": "Respostas ao formulário 1",
+        "sheet_id": "1hZHCyWIIGzbnWSCgXUy7mF3H-HBbaWb41mH-3YFGqXg",
+        "worksheet_name": "Respostas ao formulário 1",
+        "key_column": "Carimbo de data/hora",
+        "mysql_table": "checklistveiculos",
+        "columns": ["registro","Nome_do_recebedor","Email_do_Recebedor","Placa_do_Veiculo","Numero_da_VT","Seu_nome","Km_do_veiculo","Checagem_Farol_Veicul",
+            "Checagem_Luzes_Intermitentes","Checagem_Lanternas_Veiculo","Checagem_Luzes_Internas","Checagem_Sirenes_Veiculo","Checagem_Acessorios_Veiculo",
+            "Obs","Relato_avarias","Odometro","Frente","Lateral_Esquerdo","Lateral_Direito","Fundo","Fundo_Aberto"],
+        "uncolumns": ["Data atual", "Hora atual"],
+        "dates": [],
+        "hours": []
+    },
+    {
+        "sheet_name": "Recebimentos",
+        "sheet_id": "10KvoAnAGuDSTGPY_uwQrKzmzxK_ODQVyoqlx79Bn6cY",
+        "worksheet_name": "main",
+        "key_column": "Carimbo data/hora",
+        "mysql_table": "recebimentos",
+        "columns": ["registro", "Nome_recebedor", "Email_recebedor", "Local_recebimento", "Numero_nota", "Nome_fornecedor", "Data_recebimento", "Hora_recebimento", "Obs", "Tipo_recebimento",
+            "Link_nota_fiscal", "Link_boletos"],
+        "uncolumns": [],
+        "dates": ["Data do recebimento"],
+        "hours": ["Hora do recebimento"]
+    }
+]
