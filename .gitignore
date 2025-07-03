@@ -11,10 +11,10 @@ credentials/
 tests/
 
 # Airflow
-airflow/logs/
+
 airflow/airflow.db
 airflow/simple_auth_manager_passwords.json
-airflow/plugins/
+
 
 # IDEs e editores
 .idea/  # Para IntelliJ/PyCharm
