@@ -21,7 +21,7 @@ mysql_config = {
     'host': 'localhost',
     'user': 'root',
     'password': '123',
-    'database': 'formularios'
+    'database': 'your_database'
 }
 
 # Load Configuration
