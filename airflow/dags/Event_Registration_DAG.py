@@ -36,7 +36,7 @@ with open(CONFIG_PATH, 'r') as f:
 #=======================================================================================================================================#
 
 with DAG (
-    dag_id = 'recebimentos_dag',
+    dag_id = 'Event_registration_dag',
     default_args = default_args,
     description='DAG to process Event Registration data from Google Sheets to MySQL',
     schedule='@daily',

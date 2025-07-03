@@ -35,7 +35,7 @@ with open(CONFIG_PATH, 'r') as f:
     sheet = sheets_config[0]
 #=======================================================================================================================================#
 with DAG(
-    dag_id='checklist_veiculos_dag',
+    dag_id='Equipament_inspection_dag',
     default_args=default_args,
     description='DAG to process Equipment Inspection data from Google Sheets to MySQL',
     schedule='@daily',
