@@ -7,6 +7,7 @@ This repository contains an ETL (Extract, Transform, Load) pipeline using Apache
 - Git installed (`sudo apt-get install git`).
 - Access to a GitHub account for version control.
 - Basic knowledge of terminal commands.
+- Credentials from Google Sheets API on folder 'credentials'
 
 ## Installation and Configuration Steps
 
