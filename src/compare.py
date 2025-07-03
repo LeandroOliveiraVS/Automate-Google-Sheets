@@ -31,13 +31,13 @@ def compare_data(mysql_config, input_path, key_column, mysql_table, output_path)
             return output_path
 
         else: 
-            if 'registro' not in df_sql.columns:
-                raise ValueError(f"Column 'registro' not found in MySQL table {mysql_table}")
+            if key_column not in df_sql.columns:
+                raise ValueError(f"Column key_column not found in MySQL table {mysql_table}")
             else:
-                logging.info(f"Column 'registro' found in MySQL table {mysql_table}")
-                df_sql['registro'] = pd.to_datetime(df_sql['registro'], errors='coerce')
+                logging.info(f"Column key_column found in MySQL table {mysql_table}")
+                df_sql[key_column] = pd.to_datetime(df_sql[key_column], errors='coerce')
         
-                missing_data = df_sheets[~df_sheets[key_column].isin(df_sql['registro'])]
+                missing_data = df_sheets[~df_sheets[key_column].isin(df_sql[key_column])]
                 missing_data.to_csv(output_path, index=False)  
                 
                 cursor.close()
