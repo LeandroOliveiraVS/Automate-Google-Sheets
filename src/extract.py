@@ -3,7 +3,12 @@ from google.oauth2.service_account import Credentials
 import pandas as pd
 import logging
 
-def fetch_data(credentials_path, sheet_id, worksheet_name, output_path):
+def fetch_data(credentials_path, sheet, output_path):
+
+    # Defining variables
+    sheet_id = sheet['sheet_id']
+    worksheet_name = sheet['worksheet_name']
+    
     try:
         logging.info(f"Extracting data from sheet ID: {sheet_id}, worksheet: {worksheet_name}")
         scope = ["https://www.googleapis.com/auth/spreadsheets"]

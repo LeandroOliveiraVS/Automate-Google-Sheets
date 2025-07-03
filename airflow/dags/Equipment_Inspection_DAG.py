@@ -48,10 +48,9 @@ with DAG(
         python_callable=fetch_data,
         op_kwargs={
             'credentials_path': CREDENTIALS_PATH,
-            'sheet_id': sheet['sheet_id'],
+            'sheet': sheet,
             'worksheet_name': sheet['worksheet_name'],
-            'output_path': os.path.join(TEMP_DIR, 'Equipment_Inspection.csv'),
-            'uncolumns': sheet['uncolumns']
+            'output_path': os.path.join(TEMP_DIR, 'Equipment_Inspection.csv')
         }
     )
 
@@ -60,10 +59,8 @@ with DAG(
         python_callable=Transform_Data_1,
         op_kwargs={
             'input_path': os.path.join(TEMP_DIR, 'Equipment_Inspections.csv'),
-            'key_column': sheet['key_column'],
-            'mysql_table': sheet['mysql_table'],
-            'output_path': os.path.join(TEMP_DIR, 'transformed_Equipment_Inspection.csv'),
-            'uncolumns': sheet['uncolumns']
+            'sheet': sheet,
+            'output_path': os.path.join(TEMP_DIR, 'transformed_Equipment_Inspection.csv')
         }
     )
 
@@ -73,8 +70,7 @@ with DAG(
         op_kwargs={
             'mysql_config': mysql_config,
             'input_path': os.path.join(TEMP_DIR, 'transformed_Equipment_Inspection.csv'),
-            'key_column': sheet['key_column'],
-            'mysql_table': sheet['mysql_table'],
+            'sheet': sheet,
             'output_path': os.path.join(TEMP_DIR, 'missing_data_cEquipment_Inspection.csv')
         }
     )
@@ -85,8 +81,7 @@ with DAG(
         op_kwargs={
             'mysql_config': mysql_config,
             'input_path': os.path.join(TEMP_DIR, 'missing_data_Equipment_Inspection.csv'),
-            'mysql_table': sheet['mysql_table'],
-            'columns': sheet['columns']
+            'sheet': sheet
         }
     )
 

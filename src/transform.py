@@ -2,7 +2,15 @@ import logging
 import pandas as pd
 
 
-def Transform_Data_1(input_path, key_column, mysql_table, output_path, uncolumns, dates, hours):
+def Transform_Data_1(input_path, sheet, output_path):
+
+    # Defining variables
+    mysql_table = sheet['mysql_table']
+    key_column = sheet['key_column']
+    dates = sheet['dates']
+    hours = sheet['hours']
+    uncolumns = sheet['uncolumns']
+
     try:
         logging.info(f"Transforming data for table: {mysql_table}, key: {key_column}")
         df_sheets = pd.read_csv(input_path)

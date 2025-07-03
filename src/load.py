@@ -4,7 +4,12 @@ import mysql.connector
 from mysql.connector import MySQLConnection
 from mysql.connector import Error
 
-def load_data_to_mysql(mysql_config, input_path, mysql_table, columns):
+def load_data_to_mysql(mysql_config, input_path, sheet):
+
+    # Defining variables
+    mysql_table = sheet['mysql_table']
+    columns = sheet['columns']
+    
     try:
         logging.info(f"Loading data to MySQL table: {mysql_table}")
         df = pd.read_csv(input_path)

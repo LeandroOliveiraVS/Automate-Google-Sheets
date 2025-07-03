@@ -4,7 +4,12 @@ from datetime import datetime
 import logging
 import pandas as pd
 
-def compare_data(mysql_config, input_path, key_column, mysql_table, output_path):
+def compare_data(mysql_config, input_path, sheet, output_path):
+
+    # Defining variables
+    mysql_table = sheet['mysql_table']
+    key_column = sheet['key_column']
+
     try:
         logging.info(f"Comparing data for table: {mysql_table}, key: {key_column}")
         df_sheets = pd.read_csv(input_path)
@@ -31,13 +36,13 @@ def compare_data(mysql_config, input_path, key_column, mysql_table, output_path)
             return output_path
 
         else: 
-            if key_column not in df_sql.columns:
-                raise ValueError(f"Column key_column not found in MySQL table {mysql_table}")
+            if 'registro' not in df_sql.columns:
+                raise ValueError(f"Column 'registro' not found in MySQL table {mysql_table}")
             else:
-                logging.info(f"Column key_column found in MySQL table {mysql_table}")
-                df_sql[key_column] = pd.to_datetime(df_sql[key_column], errors='coerce')
+                logging.info(f"Column 'registro' found in MySQL table {mysql_table}")
+                df_sql['registro'] = pd.to_datetime(df_sql['registro'], errors='coerce')
         
-                missing_data = df_sheets[~df_sheets[key_column].isin(df_sql[key_column])]
+                missing_data = df_sheets[~df_sheets[key_column].isin(df_sql['registro'])]
                 missing_data.to_csv(output_path, index=False)  
                 
                 cursor.close()

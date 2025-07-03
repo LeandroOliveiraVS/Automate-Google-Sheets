@@ -49,10 +49,8 @@ with DAG (
         python_callable = fetch_data,
         op_kwargs={
             'credentials_path': CREDENTIALS_PATH,
-            'sheet_id': sheet['sheet_id'],
-            'worksheet_name': sheet['worksheet_name'],
+            'sheet': sheet,
             'output_path': os.path.join(TEMP_DIR, 'Event_Registration.csv'),
-            'uncolumns': sheet['uncolumns']
         }
     )
 
@@ -61,12 +59,8 @@ with DAG (
         python_callable = Transform_Data_1,
         op_kwargs={
             'input_path': os.path.join(TEMP_DIR, 'Event_Registration.csv'),
-            'key_column': sheet['key_column'],
-            'mysql_table': sheet['mysql_table'],
-            'output_path': os.path.join(TEMP_DIR, 'trans_Event_Registration.csv'),
-            'uncolumns': sheet['uncolumns'],
-            'dates': sheet['dates'],
-            'hours': sheet['hours']
+            'sheet': sheet,
+            'output_path': os.path.join(TEMP_DIR, 'trans_Event_Registration.csv')
         }
     )
 
@@ -76,9 +70,8 @@ with DAG (
         op_kwargs={
             'mysql_config': mysql_config,
             'input_path': os.path.join(TEMP_DIR, 'trans_Event_Registration.csv'),
-            'key_column': sheet['key_column'],
-            'mysql_table': sheet['mysql_table'],
-            'output_path': os.path.join(TEMP_DIR, 'missing_Event_Registration.csv'),
+            'sheet': sheet,
+            'output_path': os.path.join(TEMP_DIR, 'missing_Event_Registration.csv')
         }
     )
 
@@ -88,8 +81,7 @@ with DAG (
         op_kwargs={
             'mysql_config': mysql_config,
             'input_path': os.path.join(TEMP_DIR, 'missing_Event_Registration.csv'),
-            'mysql_table': sheet['mysql_table'],
-            'columns': sheet['columns']
+            'sheet': sheet
         }
     )
 
