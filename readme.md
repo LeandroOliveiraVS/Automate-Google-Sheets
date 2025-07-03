@@ -55,6 +55,7 @@ Edit the airflow.cfg file (located in ~/repos/your_folder/airflow/airflow.cfg) t
 
 auth_manager
 auth_manager = airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@localhost/airflow
 
 webserver
 load_examples = False
