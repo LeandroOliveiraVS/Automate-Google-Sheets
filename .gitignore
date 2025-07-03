@@ -2,26 +2,3 @@
 .venv/
 __pycache__/
 *.pyc
-
-# Credenciais e arquivos sensíveis
-credentials/
-*.json  # Ignora todos os JSONs, ajuste se necessário (ex.: exceto config/sheets_config.json)
-
-# Arquivos temporários
-tests/
-
-# Airflow
-
-airflow/airflow.db
-airflow/simple_auth_manager_passwords.json
-
-
-# IDEs e editores
-.idea/  # Para IntelliJ/PyCharm
-*.swp   # Para Vim
-*.sublime-workspace
-
-# Arquivos gerados
-*.log
-*.bak
-*.tmp
