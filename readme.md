@@ -69,3 +69,8 @@ Run Airflow in standalone mode to start the webserver, scheduler, and other comp
 -bash
 (with the virtual environment)
 airflow standalone
+
+## New Sheet
+
+In order to set up a new sheet, add the credential's email to the sheet, and in sheets_config.json, create a net item inside
+the [], follow the examples to know what to set into the json file, then create the DAG into the DAGs folder.
