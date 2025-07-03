@@ -13,14 +13,14 @@ default_args = {
     'owner': 'user',
     'depends_on_past': False,
     'email_on_failure': False,
-    'email': ['you_email@email.com']
+    'email': ['your_email@email.com']
 }
 
 # MySQL configuration
 mysql_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '123',
+    'password': 'your_password',
     'database': 'your_database'
 }
 

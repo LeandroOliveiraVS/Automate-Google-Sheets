@@ -20,7 +20,7 @@ default_args = {
 mysql_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': '123',
+    'password': 'your_password',
     'database': 'your_database'
 }
 
