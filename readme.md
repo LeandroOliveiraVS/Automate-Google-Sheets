@@ -46,18 +46,17 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;"
 sudo -u postgres psql -c "ALTER DATABASE airflow OWNER TO airflow;"
 
 ### 5. Initialize Airflow Database
-Delete any existing database (if required) and migrate the schema:
+Initialize Airflow database for the first time:
 
 airflow db migrate
 
 ### 6. Configure airflow.cfg
-Edit the airflow.cfg file (located in ~/repos/your_folder/airflow/airflow.cfg) to use FAB authentication and disable examples:
+Edit the folowing lines in airflow.cfg file (located in ~/repos/your_folder/airflow/airflow.cfg) 
+to use FAB authentication and disable examples and use PostgreSQL to airflow persistent metadata:
 
 auth_manager
 auth_manager = airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
 sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@localhost/airflow
-
-webserver
 load_examples = False
 
 ### 7. Start Airflow Standalone
