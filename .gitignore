@@ -1,4 +1,28 @@
-# Ambiente virtual
+# Ambiente virtual e arquivos compilados
 .venv/
 __pycache__/
 *.pyc
+
+# Credenciais e arquivos sensíveis
+credentials/
+*.json
+!config/sheets_config.json
+
+# Arquivos temporários
+tmp/
+*.csv
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+airflow/plugins/
+
+# IDEs e editores
+.idea/
+*.swp
+*.sublime-workspace
+
+# Arquivos gerados
+*.log
+*.bak
+*.tmp

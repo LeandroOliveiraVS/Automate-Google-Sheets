@@ -13,6 +13,7 @@ This repository contains an ETL (Extract, Transform, Load) pipeline using Apache
 
 ### 1. Update and Install Dependencies
 Update the package list and install required system packages:
+
 -bash
 sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install python3 python3-pip python3-venv -y
@@ -40,6 +41,7 @@ source ~/.bashrc
 ### 4. Set Up PostgreSQL Database
 Configure a PostgreSQL database for Airflow metadata:
 
+-bash
 sudo -u postgres psql -c "CREATE DATABASE airflow;"
 sudo -u postgres psql -c "CREATE USER airflow WITH PASSWORD 'airflow';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;"
@@ -48,8 +50,10 @@ sudo -u postgres psql -c "ALTER DATABASE airflow OWNER TO airflow;"
 ### 5. Initialize Airflow Database
 Initialize Airflow database for the first time:
 
+-bash
 airflow db migrate
 
+Once executed, this code will create the necessary files and folders to airflow.
 ### 6. Configure airflow.cfg
 Edit the folowing lines in airflow.cfg file (located in ~/repos/your_folder/airflow/airflow.cfg) 
 to use FAB authentication and disable examples and use PostgreSQL to airflow persistent metadata:
@@ -62,5 +66,6 @@ load_examples = False
 ### 7. Start Airflow Standalone
 Run Airflow in standalone mode to start the webserver, scheduler, and other components:
 
+-bash
 (with the virtual environment)
 airflow standalone
