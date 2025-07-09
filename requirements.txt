@@ -1,0 +1,11 @@
+# Para interagir com o Google Sheets e outras APIs do Google
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+gspread
+
+# Para manipular os dados
+pandas
+
+# Para conectar a um banco de dados MySQL/MariaDB
+mysql-connector-python

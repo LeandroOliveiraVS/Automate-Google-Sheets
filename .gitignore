@@ -1,0 +1,25 @@
+# Arquivos de ambiente - NUNCA ENVIE SENHAS OU CHAVES DE API PARA O GIT
+.env
+
+# Logs e arquivos temporários gerados pelo Airflow
+logs/
+tmp/
+
+# Dependências e caches do Python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Arquivos de IDE e de configuração local
+.vscode/
+.idea/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração com valores reais
+config/sheets_config.json
+config/airflow.cfg

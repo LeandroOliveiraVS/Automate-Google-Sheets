@@ -1,0 +1,12 @@
+[   
+    {
+    "sheet_id": "COLOQUE_O_ID_DA_PLANILHA_AQUI",
+    "worksheet_name": "main",
+    "mysql_table": "recebimentos",
+    "key_column": "registro",
+    "columns": ["coluna1", "coluna2"],
+    "dates": ["data_pagamento"],
+    "hours": ["hora_evento"],
+    "uncolumns": ["obs"]
+  }
+]
