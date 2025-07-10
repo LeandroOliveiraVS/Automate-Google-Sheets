@@ -1,7 +1,9 @@
+import pendulum
 import pandas as pd
 import logging
-import mysql.connector
-from mysql.connector import Error
+from airflow.providers.mysql.hooks.mysql import MySqlHook
+
+#===================================================================================================================================
 
 def update_mysql_from_file(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
     """
@@ -9,88 +11,109 @@ def update_mysql_from_file(mysql_conn_id: str, sheet_config:dict, df_transformad
     e atualiza múltiplas colunas nas linhas que foram alteradas.
     """
     # Variaveis do sheet.
-    mysql_table = sheet['mysql_table']
-    update_cols = sheet['update_cols'] 
-    key_column = sheet['key_column']
+    main_table = sheet_config['mysql_table']
+    update_cols = sheet_config['update_cols']
+    key_column = sheet_config['key_column']
     
-    logging.info("Iniciando a tarefa de atualização do MySQL.")
+    if df_transformado.empty:
+        logging.info(f"DataFrame vazio. Nenhuma atualização para a tabela '{main_table}'.")
+        return
+
+    # Usar um nome de tabela único com timestamp para evitar conflitos
+    staging_table_name = f"staging_{main_table}_{int(pendulum.now().timestamp())}"
+    
+    hook = MySqlHook(mysql_conn_id=mysql_conn_id)
+
+    # O get_sqlalchemy_engine() é a forma mais fácil de usar o pandas.to_sql com o Hook
+    engine = hook.get_sqlalchemy_engine()
+
+    logging.info(f"Iniciando atualização para {len(df_transformado)} registros na tabela '{main_table}' via tabela de staging '{staging_table_name}'.")
+
+    # Usamos um bloco try/finally para garantir que a tabela de staging seja sempre apagada
+    try:
+        # --- Passo 1: Carregar os dados novos para a tabela de staging ---
+        logging.info(f"Carregando dados para a tabela de staging: {staging_table_name}")
+        # O método to_sql do pandas cria e carrega a tabela de uma vez só
+        df_transformado.to_sql(staging_table_name, con=engine, index=False, if_exists='replace', chunksize=1000)
+        logging.info("Dados carregados para a tabela de staging com sucesso.")
+
+        # --- Passo 2: Montar e executar a query de UPDATE com JOIN ---
+        
+        # Cria a parte SET da query: T.`col1` = S.`col1`, T.`col2` = S.`col2`, ...
+        set_clause = ", ".join([f"T.`{col}` = S.`{col}`" for col in update_cols if col != key_column])
+
+        # A query junta a tabela principal (T) com a de staging (S) e atualiza os campos
+        sql_update_query = f"""
+            UPDATE `{main_table}` AS T
+            JOIN `{staging_table_name}` AS S 
+            ON T.`{key_column}` = S.`{key_column}`
+            SET {set_clause}
+        """
+
+        logging.info("Executando a query de UPDATE a partir da tabela de staging...")
+        # Usamos o método 'run' do hook para executar a atualização
+        result = hook.run(sql_update_query)
+        logging.info(f"Query de UPDATE concluída. Resultado: {result}")
+
+    except Exception as e:
+        logging.error(f"Erro durante a operação de atualização via tabela de staging: {e}")
+        raise # Re-lança a exceção para que a tarefa falhe no Airflow
+        
+    finally:
+        # --- Passo 3: Apagar a tabela de staging (MUITO IMPORTANTE) ---
+        logging.info(f"Limpando e removendo a tabela de staging: {staging_table_name}")
+        hook.run(f"DROP TABLE IF EXISTS `{staging_table_name}`")
+
+#===================================================================================================================================
+
+def update_on_key(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
+    # Variaveis do sheet.
+    mysql_table = sheet_config['mysql_table']
+    update_cols = sheet_config['update_cols']
+    key_column = sheet_config['key_column']
+    
+    # Pega todas as colunas do DataFrame para o insert
+    all_cols = df_transformado.columns.tolist()
+
+    if df_transformado.empty:
+        logging.info(f"DataFrame vazio. Nenhuma operação de upsert para a tabela '{mysql_table}'.")
+        return
+    
+    logging.info(f"Iniciando operação de UPSERT para {len(df_transformado)} registros na tabela '{mysql_table}'.")
     
     try:
-        # Dados CSV que entram
-        logging.info(f"Lendo arquivo de dados de entrada: {input_path}")
-        df_new_data = pd.read_csv(input_path)
-        
-        # Checagem de colunas presentes.
-        required_cols = [key_column] + update_cols
-        if not all(col in df_new_data.columns for col in required_cols):
-            raise ValueError(f"Colunas necessárias ({required_cols}) não encontradas no arquivo.")
-        
-        # Preencher espaços em branco para o banco MySQL.
-        df_new_data.fillna('', inplace=True)
+        # Conexão
+        hook = MySqlHook(mysql_conn_id=mysql_conn_id)
 
-        # Conectando-se ao banco de dados.
-        logging.info(f"Conectando ao MySQL para buscar dados da tabela `{mysql_table}`")
-        conn = mysql.connector.connect(**mysql_config)
+        # Prepara os dados para inserção, convertendo nulos do pandas para None do Python
+        rows_to_insert = df_transformado.replace({pd.NA: None}).values.tolist()
+
+        # --- Montagem da Query SQL ---
         
-        # Query dinamica para selecionar as colunas e valores para atualização.
-        cols_to_select = ", ".join([f"`{col}`" for col in required_cols])
-        df_sql_current = pd.read_sql(f"SELECT {cols_to_select} FROM `{mysql_table}`", conn)
-
-        # Transformando o nome das colunas dos dados antigos para COLUNA_old.
-        logging.info("Comparando dados para encontrar diferenças...")
-        rename_dict = {col: f'{col}_old' for col in update_cols}
-        df_sql_current.rename(columns=rename_dict, inplace=True)
+        # Cláusula de colunas para o INSERT: `(col1, col2, col3)`
+        insert_clause = ", ".join([f"`{col}`" for col in all_cols])
         
-        # Transformar ambas as colunas chaves para o merge.
-        df_new_data[key_column] = df_new_data[key_column].astype(str)
-        if not df_sql_current.empty:
-            df_sql_current[key_column] = df_sql_current[key_column].astype(str)
+        # Placeholders para os valores: `(%s, %s, %s)`
+        value_placeholders = ", ".join(["%s"] * len(all_cols))
 
-        # Merge para juntas as tabelas do Sheets e do mysql nas linhas de dados que tem a mesma coluna chave.
-        merged_df = pd.merge(df_new_data, df_sql_current, on=key_column, how='inner')
+        # Cláusula de atualização para o ON DUPLICATE KEY: `col2 = VALUES(col2), col3 = VALUES(col3)`
+        update_clause = ", ".join([f"`{col}` = VALUES(`{col}`)" for col in update_cols if col != key_column])
+
+        # CORREÇÃO 2: Remover a key_column da cláusula ON DUPLICATE KEY
+        sql_upsert_query = f"""
+            INSERT INTO `{mysql_table}` ({insert_clause})
+            VALUES ({value_placeholders})
+            ON DUPLICATE KEY UPDATE {update_clause}
+        """
+
+        # Executa a query para todas as linhas de uma só vez
+        hook.run(sql_upsert_query, parameters=rows_to_insert)
         
-        # Criação de duas novas tabelas com os valores velhos e novos a partir do merged_df.
-        df_new_values = merged_df[update_cols]
-        df_old_values = merged_df[[f'{col}_old' for col in update_cols]]
-        df_old_values.columns = update_cols
-        
-        # Comparando as duas tabelas para achar dados diferentes e criando uma outra tabela somente com as linhas com os dados
-        # para atualizar.
-        diff_mask = (df_new_values.ne(df_old_values) | (df_new_values.notna() & df_old_values.isna())).any(axis=1)
-        rows_to_update = merged_df[diff_mask]
+        logging.info(f"Operação de UPSERT concluída com sucesso para a tabela '{mysql_table}'.")
 
-        # Se estiver vazio retorna mensagem.
-        if rows_to_update.empty:
-            logging.info("Nenhuma mudança encontrada. O banco de dados já está atualizado. ✅")
-            conn.close()
-            return
-
-        # Se houver dados a query para atualizar (UPDATE) é criada. 
-        logging.info(f"Encontradas {len(rows_to_update)} linhas com alterações para atualizar.")
-        cursor = conn.cursor()
-        set_clause = ", ".join([f"`{col}` = %s" for col in update_cols])
-        sql_update_query = f"UPDATE `{mysql_table}` SET {set_clause} WHERE `{key_column}` = %s"
-
-        # Itera sobre as linhas de dados na tabela de dados para atualizar.
-        for _, row in rows_to_update.iterrows():
-            update_values = [row[col] for col in update_cols]
-            key_value = row[key_column]
-            data_tuple = tuple(update_values + [key_value])
-            cursor.execute(sql_update_query, data_tuple)
-        
-        # Confirma as alterações e fecha a conexão com o banco de dados.
-        conn.commit()
-        cursor.close()
-        conn.close()
-        logging.info(f"Atualização concluída com sucesso! {len(rows_to_update)} linhas afetadas. 🚀")
-
-    except Error as e:
-        logging.error(f"Erro de Banco de Dados: {e}")
-        if conn and conn.is_connected(): conn.rollback()
-        raise # Re-lança a exceção para que o Airflow marque a tarefa como falha
-    except FileNotFoundError:
-        logging.error(f"Arquivo de entrada não encontrado em: {input_path}")
-        raise
     except Exception as e:
-        logging.error(f"Ocorreu um erro geral: {e}")
+        logging.error(f"Erro durante a operação de UPSERT para a tabela '{mysql_table}': {e}")
         raise
+
+#===================================================================================================================================
+
