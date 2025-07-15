@@ -44,7 +44,11 @@ jobs:
         # 5. Testar a integridade das DAGs
       - name: Testar importação das DAGs
         run: |
-          export AIRFLOW__CORE__DAGS_FOLDER=$(pwd)/dags
+          export AIRFLOW_HOME=$(pwd)/.airflow_test_home
+          export AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+          export AIRFLOW__CORE__LOAD_EXAMPLES=False
+          export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:///${AIRFLOW_HOME}/airflow.db
+          airflow db migrate
           airflow dags list-import-errors
 
   # --- JOB DE ENTREGA CONTÍNUA (BUILD DA IMAGEM) ---
