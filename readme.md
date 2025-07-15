@@ -6,41 +6,48 @@ Este projeto extrai dados do Google Sheets, os transforma e carrega em um banco 
 
 Para rodar este projeto, siga os passos abaixo:
 
-1.  **Clonar o Repositório:**
-    ```bash
-    git clone [https://github.com/LeandroOliveiraVS/Automate-Google-Sheets](https://github.com/seu-usuario/seu-repositorio.git)
-    cd seu-repositorio
-    ```
+**Pré-requisitos:** Docker e Docker Compose instalados.
 
-2.  **Configurar Credenciais do Google:**
-    * Crie uma pasta `secrets/` na raiz do projeto.
-    * Coloque seu arquivo de credenciais do Google (JSON) dentro desta pasta.
+### 1. Preparar Arquivos de Configuração
+Você precisará de alguns arquivos para configurar o ambiente. Crie a seguinte estrutura de pastas:
 
-3.  **Configurar Planilhas:**
-    * Na pasta `config/`, renomeie o arquivo `sheets_config.template.json` para `sheets_config.json`.
-    * Edite o `sheets_config.json` e preencha os valores reais, como o `sheet_id`.
+```
+/servidor_airflow/
+├── config/
+│   └── sheets_config.json
+├── secrets/
+│   └── sua_credencial_google.json
+│── dags/
+│   └── seu_dag.py
+├── src/
+│   └── seu_script.py
+├── docker-compose.yml
+└── .env
+```
 
-4.  **Configurar Variáveis de Ambiente:**
-    * Crie um arquivo `.env` na raiz do projeto. Ele deve conter as seguintes variáveis:
-      ```env
-      # ID do usuário para evitar problemas de permissão no Linux
-      AIRFLOW_UID=1000 
+* **`docker-compose.yml`**: Copie o conteúdo do arquivo `docker-compose.yml` deste repositório.
+* **`secrets/sua_credencial_google.json`**: Coloque aqui seu arquivo de credenciais do Google.
+* **`config/sheets_config.json`**: Crie este arquivo com base no `config/sheets_config.template.json` do repositório, preenchendo os IDs e nomes reais.
+* **`.env`**: Crie este arquivo e adicione a seguinte linha (use `id -u` em um terminal Linux para encontrar seu ID):
+  ```env
+  AIRFLOW_UID=1000
+  ```
 
-      # Dependências Python adicionais (se houver)
-      # _PIP_ADDITIONAL_REQUIREMENTS=""
-      ```
-      *Para obter seu UID no Linux/macOS, use o comando `id -u`.*
+### 2. Baixar a Imagem Docker Pronta
+Faça o login no GitHub Container Registry e baixe a imagem mais recente.
+```bash
+# Faça o login com seu usuário do GitHub e um Personal Access Token
+docker login ghcr.io -u SEU_USUARIO_GITHUB
 
-5.  **Construir e Iniciar o Ambiente:**
-    ```bash
-    docker compose build
-    docker compose up -d
-    ```
+# Baixe a imagem
+docker pull ghcr.io/leandrooliveiravs/automate-google-sheets:latest
+```
 
-6.  **Configurar Conexões no Airflow:**
-    * Acesse a interface do Airflow em `http://localhost:8080`.
-    * Vá em **Admin -> Connections** e crie as seguintes conexões:
-        * **`google_cloud_default`**: Para o Google Cloud.
-        * **`mysql_local`**: Para o seu banco de dados MySQL.
+### 3. Iniciar a Aplicação
+Dentro da pasta `/servidor_airflow`, execute o comando:
+```bash
+docker compose up -d
+```
 
-Agora o projeto está pronto para ser executado.
+### 4. Configurar Conexões no Airflow
+Acesse a interface do Airflow (`http://localhost:8080`) e configure as conexões necessárias em **Admin -> Connections**, como `google_cloud_default` e a conexão para o seu SQL Server.
