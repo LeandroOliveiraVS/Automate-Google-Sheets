@@ -1,31 +1,32 @@
 import pendulum
 import pandas as pd
 import logging
-from airflow.providers.mysql.hooks.mysql import MySqlHook
-
-#===================================================================================================================================
-
-def update_mysql_from_file(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
-    """
-    Função reutilizável que compara dados de um arquivo com uma tabela MySQL
-    e atualiza múltiplas colunas nas linhas que foram alteradas.
-    """
+from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
+#===============================================================================================================================================================
+#                                                         ATUALIZAR LINHAS POR UMA COLUNA ESPECÍFICA                                                           #
+#===============================================================================================================================================================
+def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
+ 
     # Variaveis do sheet.
-    main_table = sheet_config['mysql_table']
-    update_cols = sheet_config['update_cols']
+    main_table = sheet_config['table']
     key_column = sheet_config['key_column']
     
     if df_transformado.empty:
         logging.info(f"DataFrame vazio. Nenhuma atualização para a tabela '{main_table}'.")
         return
+    
+    # Colunas para a SQL Query
+    all_cols = df_transformado.columns.tolist()
+
+    update_cols = [col for col in all_cols != key_column]
 
     # Usar um nome de tabela único com timestamp para evitar conflitos
     staging_table_name = f"staging_{main_table}_{int(pendulum.now().timestamp())}"
     
-    hook = MySqlHook(mysql_conn_id=mysql_conn_id)
+    hook = MsSqlHook(mssql_conn_id=mssql_conn_id)
 
     # O get_sqlalchemy_engine() é a forma mais fácil de usar o pandas.to_sql com o Hook
-    engine = hook.get_sqlalchemy_engine()
+    engine = hook.get_sqlalchemy_engine(fast_executemany=True)
 
     logging.info(f"Iniciando atualização para {len(df_transformado)} registros na tabela '{main_table}' via tabela de staging '{staging_table_name}'.")
 
@@ -37,17 +38,27 @@ def update_mysql_from_file(mysql_conn_id: str, sheet_config:dict, df_transformad
         df_transformado.to_sql(staging_table_name, con=engine, index=False, if_exists='replace', chunksize=1000)
         logging.info("Dados carregados para a tabela de staging com sucesso.")
 
-        # --- Passo 2: Montar e executar a query de UPDATE com JOIN ---
+        # --- Passo 2: Montar e executar a query de MERGE com JOIN ---
         
-        # Cria a parte SET da query: T.`col1` = S.`col1`, T.`col2` = S.`col2`, ...
-        set_clause = ", ".join([f"T.`{col}` = S.`{col}`" for col in update_cols if col != key_column])
+       # Cláusula de colunas para o INSERT: [col1], [col2], [col3]
+        insert_cols_str = ", ".join([f"[{col}]" for col in all_cols])
+
+        # Cláusula de valores para o INSERT: S.[col1], S.[col2], S.[col3]
+        insert_values_str = ", ".join([f"S.[{col}]" for col in all_cols])
+
+        # Cláusula SET para o UPDATE: T.[col1] = S.[col1], T.[col2] = S.[col2]
+        update_set_clause = ", ".join([f"T.[{col}] = S.[{col}]" for col in update_cols])
 
         # A query junta a tabela principal (T) com a de staging (S) e atualiza os campos
         sql_update_query = f"""
-            UPDATE `{main_table}` AS T
-            JOIN `{staging_table_name}` AS S 
+            MERGE INTO `{main_table}` AS T
+            USING `{staging_table_name}` AS S 
             ON T.`{key_column}` = S.`{key_column}`
-            SET {set_clause}
+            WHEN MATCHED THEN
+                UPDATE SET {update_set_clause}
+            WHEN NOT MATCHED THEN
+                INSERT ({insert_cols_str})
+                VALUES ({insert_values_str})
         """
 
         logging.info("Executando a query de UPDATE a partir da tabela de staging...")
@@ -63,10 +74,10 @@ def update_mysql_from_file(mysql_conn_id: str, sheet_config:dict, df_transformad
         # --- Passo 3: Apagar a tabela de staging (MUITO IMPORTANTE) ---
         logging.info(f"Limpando e removendo a tabela de staging: {staging_table_name}")
         hook.run(f"DROP TABLE IF EXISTS `{staging_table_name}`")
-
-#===================================================================================================================================
-
-def update_on_key(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
+#===============================================================================================================================================================
+#                                                           ATUALIZAR LINHAS PELA CHAVE PRIMARIA                                                               #
+#===============================================================================================================================================================
+def update_on_key(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
     # Variaveis do sheet.
     mysql_table = sheet_config['mysql_table']
     update_cols = sheet_config['update_cols']
@@ -83,7 +94,7 @@ def update_on_key(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.Dat
     
     try:
         # Conexão
-        hook = MySqlHook(mysql_conn_id=mysql_conn_id)
+        hook = mssql_conn_id(mssql_conn_id=mssql_conn_id)
 
         # Prepara os dados para inserção, convertendo nulos do pandas para None do Python
         rows_to_insert = df_transformado.replace({pd.NA: None}).values.tolist()

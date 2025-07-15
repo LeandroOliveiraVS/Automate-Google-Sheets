@@ -3,6 +3,9 @@ from airflow.providers.google.common.hooks.base_google import GoogleBaseHook
 import pandas as pd
 import logging
 
+#===============================================================================================================================================================
+#                                                       CARREGAR OS DADOS DA PLANILHA                                                                          #
+#===============================================================================================================================================================
 def fetch_data(gcp_conn_id: str, sheet_config:dict) -> pd.DataFrame:
 
     # Definir variaveis.

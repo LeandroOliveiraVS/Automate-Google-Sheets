@@ -11,7 +11,6 @@ import compare
 
 CONFIG_FILE_PATH = "/opt/airflow/config/sheets_config.json"
 
-
 #=======================================================================================================================================#
 
 @dag(
@@ -51,9 +50,9 @@ def dag_processar_recebimentos():
         return df_transformado
     
     @task
-    def compare_data_task(mysql_conn_id: str, sheet_config: dict, df_transformado: pd.DataFrame) -> pd.DataFrame:
+    def compare_data_task(mssql_conn_id: str, sheet_config: dict, df_transformado: pd.DataFrame) -> pd.DataFrame:
         df_final = compare.compare_data(
-            mysql_conn_id = mysql_conn_id,
+            mssql_conn_id = mssql_conn_id,
             sheet_config = sheet_config,
             df_transformado = df_transformado
         )
@@ -61,9 +60,9 @@ def dag_processar_recebimentos():
         return df_final
     
     @task
-    def load_data_task(mysql_conn_id: str, sheet_config: dict, df_final: pd.DataFrame):
-        load.load_data_to_mysql(
-            mysql_conn_id = mysql_conn_id,
+    def load_data_task(mssql_conn_id: str, sheet_config: dict, df_final: pd.DataFrame):
+        load.load_data_to_mssql(
+            mssql_conn_id = mssql_conn_id,
             sheet_config = sheet_config,
             df_final = df_final
         )
@@ -73,12 +72,12 @@ def dag_processar_recebimentos():
     extracted_df = extract_data_task(sheet_config=config)
     transformed_df = transform_data_task(df_extraido=extracted_df, sheet_config=config)
     final_df = compare_data_task(
-        mysql_conn_id="mysql_local", 
+        mssql_conn_id="mssql_default", 
         sheet_config=config,
         df_transformado=transformed_df
     )
     load_data_task(
-        mysql_conn_id="mysql_local", 
+        mssql_conn_id="mssql_default", 
         sheet_config=config,
         df_final=final_df
     )

@@ -1,23 +1,25 @@
 import logging
 import pandas as pd
-from airflow.providers.mysql.hooks.mysql import MySqlHook
+from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
+#===============================================================================================================================================================
+#                                                       COMPARAR DADOS DO BANCO COM OS QUE VEM DA PLANILHA                                                     #
+#===============================================================================================================================================================
+def compare_data(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame) -> pd.DataFrame:
 
-def compare_data(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame) -> pd.DataFrame:
-
-    mysql_table = sheet_config['mysql_table']
+    table = sheet_config['table']
     key_column = sheet_config['key_column']
 
     try:
     
-        hook = MySqlHook(mysql_conn_id=mysql_conn_id)
+        hook = MsSqlHook(mssql_conn_id=mssql_conn_id)
 
         # 1. Captar a linha com a ultima entrada
-        date_query = f"SELECT MAX({key_column}) FROM {mysql_table}"
+        date_query = f"SELECT MAX({key_column}) FROM {table}"
         result = hook.get_first(sql=date_query)
 
         # 2. Tratar o caso da tabela estar vazia ou a consulta não retornar nada
         if not result or result[0] is None:
-            logging.info(f"Tabela de destino '{mysql_table}' está vazia ou não contém registros. Processando todos os dados.")
+            logging.info(f"Tabela de destino '{table}' está vazia ou não contém registros. Processando todos os dados.")
             return df_transformado
         
         max_date_in_db = result[0]
@@ -33,6 +35,6 @@ def compare_data(mysql_conn_id: str, sheet_config:dict, df_transformado: pd.Data
         return new_data_df
 
     except Exception as e:
-        logging.error(f"Erro durante a operação de transformar os dados para a tabela '{mysql_table}': {e}")
+        logging.error(f"Erro durante a operação de transformar os dados para a tabela '{table}': {e}")
         raise
     

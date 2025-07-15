@@ -9,3 +9,7 @@ pandas
 
 # Para conectar a um banco de dados MySQL/MariaDB
 mysql-connector-python
+
+# Para conectar a um banco de dados Microsoft SQL Server
+apache-airflow-providers-microsoft-mssql
+pyodbc
