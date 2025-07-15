@@ -84,7 +84,8 @@ jobs:
         with:
           context: . # Usa o diretório raiz do projeto como contexto
           push: true # Diz para enviar a imagem após o build
-          tags: ghcr.io/leandrooliveiravs/automate-google-sheets:latest
+          tags: |
+                ghcr.io/leandrooliveiravs/automate-google-sheets:latest
                 ghcr.io/leandrooliveiravs/automate-google-sheets:${{ github.sha }}
           # Cria duas tags: 'latest' e uma com o hash do commit (para versionamento)
     
