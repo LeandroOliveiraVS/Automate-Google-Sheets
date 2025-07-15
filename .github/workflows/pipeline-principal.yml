@@ -1,0 +1,85 @@
+name: CI/CD - Pipeline Principal
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  # --- JOB DE INTEGRAÇÃO CONTÍNUA (TESTES) ---
+  ci-testes:
+    name: Testes de Verificação de qualidade
+    runs-on: ubuntu-latest
+
+    steps:
+
+        # 1. Baixa o código do seu repositório para a máquina do robô
+      - name: Checkout
+        uses: actions/checkout@v4
+
+        # 2. Configurar o ambiente python
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+           python-version: '3.12'
+        
+        # 3. Instalar dependências de teste e o Airflow
+      - name: Instalar dependências
+        run: |
+          pip install flake8
+          pip install "apache-airflow==3.0.2"
+
+        # 4. Executa o Linter (verificador de estilo e erros básicos)
+      - name: Verificar qualidade do código com Flake8
+        run: |
+          # --count: mostra o total de erros
+          # --select: reporta apenas os erros listados (E=erro, W=aviso, F=falha)
+          # --show-source: mostra a linha do código com erro
+          # --statistics: mostra estatísticas no final
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+        # 5. Testar a integridade das DAGs
+      - name: Testar importação das DAGs
+        run: |
+          export AIRFLOW__CORE__DAGS_FOLDER=$(pwd)/dags
+          airflow dags list-import-errors
+
+  # --- JOB DE ENTREGA CONTÍNUA (BUILD DA IMAGEM) ---
+  cd-build-imagem:
+    name: Build e Push da Imagem Docker
+    runs-on: ubuntu-latest
+    needs: ci-testes # Este job só executa se o job 'ci-testes' passar
+    if: github.ref == 'refs/heads/main' # Só executa em pushes para a 'main', não em PRs
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 1. Configura o QEMU para build de múltiplas arquiteturas (boa prática)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 2. Configura o Docker Buildx (ferramenta de build otimizada)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Faz o login no GitHub Container Registry (GHCR)
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} # Nome do seu usuário/organização no GitHub
+          password: ${{ secrets.GITHUB_TOKEN }} # Token secreto gerado automaticamente pelo GitHub
+
+      # 4. Constrói a imagem e envia para o GHCR
+      - name: Build e Push da Imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Usa o diretório raiz do projeto como contexto
+          push: true # Diz para enviar a imagem após o build
+          tags: ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ github.sha }}
+          # Cria duas tags: 'latest' e uma com o hash do commit (para versionamento)
+    
