@@ -42,6 +42,7 @@ docker login ghcr.io -u SEU_USUARIO_GITHUB
 # Baixe a imagem
 docker pull ghcr.io/leandrooliveiravs/automate-google-sheets:latest
 ```
+Comente a linha 'Build: .' e descomente a linha 'Image: ghcr.io/leandrooliveiravs/automate-google-sheets:latest' no arquivo `docker-compose.yml`.
 
 ### 3. Iniciar a Aplicação
 Dentro da pasta `/servidor_airflow`, execute o comando:
