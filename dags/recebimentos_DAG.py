@@ -3,10 +3,7 @@ import json
 import pandas as pd
 from airflow.decorators import dag, task
 
-import extract
-import transform
-import load
-import compare
+from src import extract, transform, load, compare
 #=======================================================================================================================================#
 
 CONFIG_FILE_PATH = "/opt/airflow/config/sheets_config.json"
