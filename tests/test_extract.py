@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from src.extract import fetch_data
+from extract import fetch_data
 
 def test_fetch_data(mocker):
 
