@@ -1,4 +1,16 @@
-# Dependencias de desenvolvimento
+# Instala todas as dependências de produção listadas em requirements.txt
+-r requirements.txt
+
+# Ferramentas de desenvolvimento e teste
 pytest
 pytest-mock
-pandas
+flake8
+
+# -------------------------------------------------------------------
+# Instala o Apache Airflow e seus providers para os testes
+# IMPORTANTE: Use a mesma versão do Airflow e Python do seu Dockerfile
+--constraint "https://raw.githubusercontent.com/apache/airflow/constraints-3.0.2/constraints-3.12.txt"
+apache-airflow[providers]>=3.0.2
+apache-airflow-providers-microsoft-mssql
+apache-airflow-providers-google
+# -------------------------------------------------------------------
