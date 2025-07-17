@@ -5,7 +5,7 @@ from src.transform import Transform_Data_1
 def test_transform_data():
     # Simulando um dataframe de entrada
     df_extraido = pd.DataFrame({
-        'key_column': ['2023-01-01', '2023-01-02', None],
+        'key_column': ['01/01/2023', '02/01/2023', None],
         'colunas_manter': [1, 2, 3],
         'uncolumn': [4, 5, 6]
     })
@@ -29,7 +29,7 @@ def test_transform_data():
     # Verifica se uma das linhas foi removida devido ao valor None na coluna chave
     assert len(transformed_df) == 2 
     # Verifica se as colunas não desejadas foram removidas
-    assert 'uncolumn1' not in transformed_df.columns
-    assert 'uncolumn2' not in transformed_df.columns
+    assert 'uncolumn' not in transformed_df.columns
     # Verifica se a coluna chave foi convertida para datetime
-    assert pd.api.types.is_datetime64_any_dtype(transformed_df['key_column'])
+    assert transformed_df['key_column'].iloc[0] == '2023-01-01'
+    assert transformed_df['key_column'].iloc[1] == '2023-01-02'
