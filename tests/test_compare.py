@@ -15,9 +15,11 @@ def test_compare_data(mocker):
     }
 
     # Simulando o hook do Airflow
-    mock_hook = mocker.MagicMock()
-    mock_hook.get_first.return_value = ['2023-01-01']
-    mocker.patch('airflow.providers.microsoft.mssql.hooks.mssql.MsSqlHook', return_value=mock_hook)
+    mock_hook_instance = mocker.MagicMock()
+    mock_hook_instance.get_first.return_value = ('2023-01-01',)
+    
+    mock_mssql_hook_class = mocker.patch('src.compare.MsSqlHook', autospec=True)
+    mock_mssql_hook_class.return_value = mock_hook_instance
 
     # Executando a função que queremos testar
     new_data_df = compare_data(
