@@ -23,3 +23,6 @@ Thumbs.db
 # Arquivos de configuração com valores reais
 config/sheets_config.json
 config/airflow.cfg
+
+# Arquivos de ambiente virtual
+.venv/

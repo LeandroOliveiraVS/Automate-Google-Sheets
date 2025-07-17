@@ -1,0 +1,4 @@
+# Dependencias de desenvolvimento
+pytest
+pytest-mock
+pandas

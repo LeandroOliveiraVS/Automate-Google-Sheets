@@ -45,7 +45,13 @@ jobs:
           # --statistics: mostra estatísticas no final
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
-        # 5. Testar a integridade das DAGs
+        # 5. Executar testes de lógica nos arquivos python
+      - name: Rodar Testes Unitarios com Pytest
+        run: |
+          pip install -r requirements-dev.txt
+          pytest
+
+        # 6. Testar a integridade das DAGs
       - name: Testar importação das DAGs
         run: |
           export AIRFLOW_HOME=$(pwd)/.airflow_test_home
