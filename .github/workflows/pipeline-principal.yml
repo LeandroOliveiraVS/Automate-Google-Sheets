@@ -49,7 +49,7 @@ jobs:
       - name: Rodar Testes Unitarios com Pytest
         run: |
           pip install -r requirements-dev.txt
-          pip install -e .
+          export PYTHONPATH=$GITHUB_WORKSPACE
           pytest
 
         # 6. Testar a integridade das DAGs
