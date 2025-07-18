@@ -17,7 +17,7 @@ def load_data_to_mssql(mssql_conn_id: str, sheet_config: dict, df_final: pd.Data
         target_fields = df_final.columns.tolist()
         
         # 3. Converte o DataFrame em uma lista de tuplas/listas, substituindo nulos
-        rows_to_insert = df_final.replace({pd.NA: None}).values.tolist()
+        rows_to_insert = df_final.where(pd.notna(df_final), None).values.tolist()
 
         # 4. Chame o método 'insert_rows' do Hook
         hook.insert_rows(
