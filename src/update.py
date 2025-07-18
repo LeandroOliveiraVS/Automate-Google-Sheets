@@ -73,7 +73,7 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
     finally:
         # --- Passo 3: Apagar a tabela de staging (MUITO IMPORTANTE) ---
         logging.info(f"Limpando e removendo a tabela de staging: {staging_table_name}")
-        hook.run(f"DROP TABLE IF EXISTS `[{staging_table_name}]`")
+        hook.run(f"DROP TABLE IF EXISTS [{staging_table_name}]")
 #===============================================================================================================================================================
 #                                                           ATUALIZAR LINHAS PELA CHAVE PRIMARIA                                                               #
 #===============================================================================================================================================================
