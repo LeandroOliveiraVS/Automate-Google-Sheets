@@ -1,5 +1,5 @@
 import pandas as pd
-from src.update import update_mysql_from_file
+from src.update import update_sql_mssql
 
 def test_update_data(mocker):
 

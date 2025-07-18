@@ -3,9 +3,9 @@ import pandas as pd
 import logging
 from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
 #===============================================================================================================================================================
-#                                                         ATUALIZAR LINHAS POR UMA COLUNA ESPECÍFICA                                                           #
+#                                                             ATUALIZAR BANCO MSSQL                                                                            #
 #===============================================================================================================================================================
-def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
+def update_sql_mssql(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
  
     # Variaveis do sheet.
     main_table = sheet_config['table']
@@ -75,9 +75,9 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
         logging.info(f"Limpando e removendo a tabela de staging: {staging_table_name}")
         hook.run(f"DROP TABLE IF EXISTS [{staging_table_name}]")
 #===============================================================================================================================================================
-#                                                           ATUALIZAR LINHAS PELA CHAVE PRIMARIA                                                               #
+#                                                                ATUALIZAR BANCO MYSQL                                                                         #
 #===============================================================================================================================================================
-def update_on_key(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
+def update_sql_mysql(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.DataFrame):
     # Variaveis do sheet.
     mysql_table = sheet_config['mysql_table']
     update_cols = sheet_config['update_cols']
@@ -126,5 +126,4 @@ def update_on_key(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.Dat
         logging.error(f"Erro durante a operação de UPSERT para a tabela '{mysql_table}': {e}")
         raise
 
-#===================================================================================================================================
 
