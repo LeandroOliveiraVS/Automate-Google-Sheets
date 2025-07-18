@@ -28,7 +28,7 @@ def test_update_data(mocker):
     mock_to_sql = mocker.patch('pandas.DataFrame.to_sql')
 
     # Executando a função a testar
-    update_mysql_from_file(
+    update_sql_mssql(
         mssql_conn_id='mssql_test_conn',
         sheet_config=sheet_config,
         df_transformado=df_transformado
