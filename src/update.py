@@ -53,12 +53,12 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
         sql_update_query = f"""
             MERGE INTO [{main_table}] AS T
             USING [{staging_table_name}] AS S 
-            ON T.[{key_column}] = S.[{key_column}]
+            ON (T.[{key_column}] = S.[{key_column}])
             WHEN MATCHED THEN
                 UPDATE SET {update_set_clause}
             WHEN NOT MATCHED THEN
                 INSERT ({insert_cols_str})
-                VALUES ({insert_values_str})
+                VALUES ({insert_values_str});
         """
 
         logging.info("Executando a query de UPDATE a partir da tabela de staging...")
