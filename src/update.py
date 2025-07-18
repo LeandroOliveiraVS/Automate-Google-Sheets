@@ -51,9 +51,9 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
 
         # A query junta a tabela principal (T) com a de staging (S) e atualiza os campos
         sql_update_query = f"""
-            MERGE INTO `[{main_table}]` AS T
-            USING `[{staging_table_name}]` AS S 
-            ON T.`[{key_column}]` = S.`[{key_column}]`
+            MERGE INTO [{main_table}] AS T
+            USING [{staging_table_name}] AS S 
+            ON T.[{key_column}] = S.[{key_column}]
             WHEN MATCHED THEN
                 UPDATE SET {update_set_clause}
             WHEN NOT MATCHED THEN
