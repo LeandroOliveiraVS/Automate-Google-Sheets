@@ -56,7 +56,7 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
             ON (T.[{key_column}] = S.[{key_column}])
             WHEN MATCHED THEN
                 UPDATE SET {update_set_clause}
-            WHEN NOT MATCHED THEN
+            WHEN NOT MATCHED BY TARGET THEN
                 INSERT ({insert_cols_str})
                 VALUES ({insert_values_str});
         """
