@@ -18,7 +18,7 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
     # Colunas para a SQL Query
     all_cols = df_transformado.columns.tolist()
 
-    update_cols = [col for col in all_cols != key_column]
+    update_cols = [col for col in all_cols if col != key_column]
 
     # Usar um nome de tabela único com timestamp para evitar conflitos
     staging_table_name = f"staging_{main_table}_{int(pendulum.now().timestamp())}"
@@ -51,9 +51,9 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
 
         # A query junta a tabela principal (T) com a de staging (S) e atualiza os campos
         sql_update_query = f"""
-            MERGE INTO `{main_table}` AS T
-            USING `{staging_table_name}` AS S 
-            ON T.`{key_column}` = S.`{key_column}`
+            MERGE INTO `[{main_table}]` AS T
+            USING `[{staging_table_name}]` AS S 
+            ON T.`[{key_column}]` = S.`[{key_column}]`
             WHEN MATCHED THEN
                 UPDATE SET {update_set_clause}
             WHEN NOT MATCHED THEN
@@ -73,7 +73,7 @@ def update_mysql_from_file(mssql_conn_id: str, sheet_config:dict, df_transformad
     finally:
         # --- Passo 3: Apagar a tabela de staging (MUITO IMPORTANTE) ---
         logging.info(f"Limpando e removendo a tabela de staging: {staging_table_name}")
-        hook.run(f"DROP TABLE IF EXISTS `{staging_table_name}`")
+        hook.run(f"DROP TABLE IF EXISTS `[{staging_table_name}]`")
 #===============================================================================================================================================================
 #                                                           ATUALIZAR LINHAS PELA CHAVE PRIMARIA                                                               #
 #===============================================================================================================================================================
