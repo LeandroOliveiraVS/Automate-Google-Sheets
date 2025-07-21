@@ -42,7 +42,6 @@ jobs:
       # 4.
       - name: Iniciar o banco do airflow.
         run: |
-          export AIRFLOW_HOME=$(pwd)/.airflow_test_home
           export AIRFLOW__CORE__EXECUTOR=SequentialExecutor
           export AIRFLOW__CORE__LOAD_EXAMPLES=False
           export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:///${AIRFLOW_HOME}/airflow.db
