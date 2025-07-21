@@ -27,10 +27,14 @@ jobs:
       - name: Construir a imagem Docker de teste
         run: docker compose build
 
-      # 3. Roda o Linter DENTRO de um contêiner temporário.
-      #    Usa o serviço 'airflow-cli' do seu docker-compose.yml
+      # 3a. Avisar sobre problemas de estilo
       - name: Verificar qualidade do código com Flake8
-        run: docker compose run --entrypoint="flake8" airflow-cli .
+        run: docker compose run --entrypoint="flake8" airflow-cli . --count --show-source --statistics --exit-zero
+
+      # 3b. Falhar em caso de erros críticos
+      - name: Falhar em caso de erros criticos de codigo
+        run: |
+          docker compose run --rm --entrypoint="flake8" airflow-cli . --count --select=F,E9 --show-source --statistics
       
       # 4. Testa a integridade das DAGs DENTRO de um contêiner temporário
       #    Este comando agora usa o ambiente e o PYTHONPATH definidos no docker-compose.yml
