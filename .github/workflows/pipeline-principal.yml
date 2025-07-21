@@ -39,15 +39,12 @@ jobs:
         run: |
           docker compose run --rm --entrypoint="flake8" airflow-cli . --count --select=F,E9 --show-source --statistics
       
-      # 4.
+      # 4. Iniciar o banco de dados do airflow.
       - name: Iniciar o banco do airflow.
-        run: |
-          export AIRFLOW__CORE__EXECUTOR=SequentialExecutor
-          export AIRFLOW__CORE__LOAD_EXAMPLES=False
-          export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:///${AIRFLOW_HOME}/airflow.db
+        run: 
           airflow db migrate
 
-      # 4. Testa a integridade das DAGs DENTRO de um contêiner temporário
+      # 5. Testa a integridade das DAGs DENTRO de um contêiner temporário
       #    Este comando agora usa o ambiente e o PYTHONPATH definidos no docker-compose.yml
       - name: Testar integridade das DAGs
         run: docker compose run --rm airflow-cli airflow dags list-import-errors
