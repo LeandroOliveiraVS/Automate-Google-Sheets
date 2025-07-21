@@ -22,10 +22,12 @@ RUN apt-get update && ACCEPT_EULA=Y apt-get install -y --no-install-recommends m
 # Copia o arquivo de dependências Python
 COPY requirements-dev.txt /requirements-dev.txt
 
+# Usa o user airflow para o pip install
+USER airflow
+
 # Instala as dependências Python
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
-# Volta para o usuário 'airflow' por segurança e boas práticas no final
-USER airflow
+
 
 
