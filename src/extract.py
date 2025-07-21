@@ -1,7 +1,8 @@
-import gspread
-from airflow.providers.google.common.hooks.base_google import GoogleBaseHook
-import pandas as pd
 import logging
+
+import gspread
+import pandas as pd
+from airflow.providers.google.common.hooks.base_google import GoogleBaseHook
 
 
 # ===============================================================================================================================================================

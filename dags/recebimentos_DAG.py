@@ -1,9 +1,10 @@
-import pendulum
 import json
+
 import pandas as pd
+import pendulum
 from airflow.decorators import dag, task
 
-from src import extract, transform, load, compare
+from src import compare, extract, load, transform
 
 # =======================================================================================================================================#
 
