@@ -42,7 +42,7 @@ jobs:
       # 4. Iniciar o banco de dados do airflow.
       - name: Iniciar o banco do airflow.
         run: 
-          airflow db migrate
+          docker compose run --rm airflow-init
 
       # 5. Testa a integridade das DAGs DENTRO de um contêiner temporário
       #    Este comando agora usa o ambiente e o PYTHONPATH definidos no docker-compose.yml
