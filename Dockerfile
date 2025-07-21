@@ -25,6 +25,10 @@ COPY requirements-dev.txt /requirements-dev.txt
 # Usa o user airflow para o pip install
 USER airflow
 
+# Copia AMBOS os arquivos de requisitos para dentro da imagem
+COPY requirements.txt /requirements.txt
+COPY --chown=airflow:root requirements-dev.txt /requirements-dev.txt
+
 # Instala as dependências Python
 RUN pip install --no-cache-dir -r /requirements-dev.txt
 
