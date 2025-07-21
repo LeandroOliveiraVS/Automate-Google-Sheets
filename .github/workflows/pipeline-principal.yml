@@ -14,56 +14,35 @@ permissions:
 
 jobs:
   # --- JOB DE INTEGRAÇÃO CONTÍNUA (TESTES) ---
-  ci-testes:
-    name: Testes de Verificação de qualidade
+   ci-testes:
+    name: Build e Testes no Contêiner
     runs-on: ubuntu-latest
 
     steps:
-
-        # 1. Baixa o código do seu repositório para a máquina do robô
-      - name: Checkout
+      # 1. Baixa o código do repositório
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-        # 2. Configurar o ambiente python
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-           python-version: '3.12'
-        
-        # 3. Instalar dependências de teste e o Airflow
-      - name: Instalar dependências
-        run: |
-          pip install flake8
-          pip install "apache-airflow==3.0.2"
+      # 2. Constrói a imagem Docker.
+      - name: Construir a imagem Docker de teste
+        run: docker compose build
 
-        # 4. Executa o Linter (verificador de estilo e erros básicos)
+      # 3. Roda o Linter DENTRO de um contêiner temporário.
+      #    Usa o serviço 'airflow-cli' do seu docker-compose.yml
       - name: Verificar qualidade do código com Flake8
-        run: |
-          # --count: mostra o total de erros
-          # --select: reporta apenas os erros listados (E=erro, W=aviso, F=falha)
-          # --show-source: mostra a linha do código com erro
-          # --statistics: mostra estatísticas no final
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        run: docker compose run --rm airflow-cli flake8 .
+      
+      # 4. Testa a integridade das DAGs DENTRO de um contêiner temporário
+      #    Este comando agora usa o ambiente e o PYTHONPATH definidos no docker-compose.yml
+      - name: Testar integridade das DAGs
+        run: docker compose run --rm airflow-cli airflow dags list-import-errors
 
-        # 5. Executar testes de lógica nos arquivos python
+      # 5. Roda os Testes Unitários (Pytest) DENTRO de um contêiner temporário
       - name: Rodar Testes Unitarios com Pytest
-        run: |
-          pip install -r requirements-dev.txt
-          export PYTHONPATH=$GITHUB_WORKSPACE
-          pytest
-
-        # 6. Testar a integridade das DAGs
-      - name: Testar importação das DAGs
-        run: |
-          export AIRFLOW_HOME=$(pwd)/.airflow_test_home
-          export AIRFLOW__CORE__EXECUTOR=SequentialExecutor
-          export AIRFLOW__CORE__LOAD_EXAMPLES=False
-          export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:///${AIRFLOW_HOME}/airflow.db
-          airflow db migrate
-          airflow dags list-import-errors
+        run: docker compose run --rm airflow-cli pytest
 
   # --- JOB DE ENTREGA CONTÍNUA (BUILD DA IMAGEM) ---
-  cd-build-imagem:
+   cd-build-imagem:
     name: Build e Push da Imagem Docker
     runs-on: ubuntu-latest
     needs: ci-testes # Este job só executa se o job 'ci-testes' passar
