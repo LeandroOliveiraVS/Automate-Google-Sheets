@@ -18,6 +18,9 @@ jobs:
     name: Build e Testes no Contêiner
     runs-on: ubuntu-latest
 
+    env:
+      AIRFLOW_UID: 1001
+
     steps:
       # 1. Baixa o código do repositório
       - name: Checkout do código
