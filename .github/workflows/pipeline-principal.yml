@@ -51,7 +51,7 @@ jobs:
 
       # 5. Roda os Testes Unitários (Pytest) DENTRO de um contêiner temporário
       - name: Rodar Testes Unitarios com Pytest
-        run: docker compose run --rm --entrypoint="pytest" airflow-cli
+        run: docker compose run --rm --entrypoint="pytest" airflow-cli tests
 
   # --- JOB DE ENTREGA CONTÍNUA (BUILD DA IMAGEM) ---
    cd-build-imagem:
