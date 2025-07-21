@@ -4,9 +4,9 @@ import pandas as pd
 from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
 
 
-# ===============================================================================================================================================================
-#                                                       COMPARAR DADOS DO BANCO COM OS QUE VEM DA PLANILHA                                                     #
-# ===============================================================================================================================================================
+# ========================================================================
+#           COMPARAR DADOS DO BANCO COM OS QUE VEM DA PLANILHA           #
+# ========================================================================
 def compare_data(
     mssql_conn_id: str, sheet_config: dict, df_transformado: pd.DataFrame
 ) -> pd.DataFrame:
