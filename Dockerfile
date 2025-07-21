@@ -1,5 +1,5 @@
 # Usa a mesma imagem base que está no seu docker-compose.yml
-ARG AIRFLOW_IMAGE_NAME=apache/airflow:2.9.2
+ARG AIRFLOW_IMAGE_NAME=apache/airflow:3.0.2
 FROM ${AIRFLOW_IMAGE_NAME}
 
 # Mude para o usuário root para todas as instalações
