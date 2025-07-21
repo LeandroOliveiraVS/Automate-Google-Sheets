@@ -5,6 +5,8 @@
 pytest
 pytest-mock
 flake8
+black
+isort
 
 # -------------------------------------------------------------------
 # Instala o Apache Airflow e seus providers para os testes
