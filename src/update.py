@@ -125,5 +125,3 @@ def update_sql_mysql(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.
     except Exception as e:
         logging.error(f"Erro durante a operação de UPSERT para a tabela '{mysql_table}': {e}")
         raise
-
-

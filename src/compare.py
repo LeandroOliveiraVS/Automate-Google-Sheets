@@ -37,4 +37,3 @@ def compare_data(mssql_conn_id: str, sheet_config:dict, df_transformado: pd.Data
     except Exception as e:
         logging.error(f"Erro durante a operação de transformar os dados para a tabela '{table}': {e}")
         raise
-    

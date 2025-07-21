@@ -1,6 +1,5 @@
 import logging
 import pandas as pd
-from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
 #===============================================================================================================================================================
 #                                                                  TRANSFORMAR OS DADOS DA PLANILHA                                                                #
 #===============================================================================================================================================================
@@ -50,4 +49,3 @@ def Transform_Data_1(df_extraido: pd.DataFrame, sheet_config:dict) -> pd.DataFra
     except Exception as e:
         logging.error(f"Error transforming data: {e}")
         raise
-
