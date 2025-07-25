@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 import pendulum
 from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
-from airflow.providers.mysql.hooks.mysql import MySQLHook
+from airflow.providers.mysql.hooks.mysql import MySqlHook
 
 
 # ========================================================================
@@ -115,7 +115,7 @@ def update_sql_mysql(
         return
 
     staging_table_name = f"staging_{main_table}_{int(pendulum.now().timestamp())}"
-    hook = MySQLHook(mysql_conn_id=mysql_conn_id)
+    hook = MySqlHook(mysql_conn_id=mysql_conn_id)
     engine = hook.get_sqlalchemy_engine()
 
     logging.info(

@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
-from airflow.providers.mysql.hooks.mysql import MySQLHook
+from airflow.providers.mysql.hooks.mysql import MySqlHook
 
 
 # =================================================================================
@@ -40,7 +40,7 @@ def load_data_to_mysql(mysql_conn_id: str, sheet_config: dict, df_final: pd.Data
 
     try:
         # 1. Conectar ao banco de dados.
-        hook = MySQLHook(mysql_conn_id=mysql_conn_id)
+        hook = MySqlHook(mysql_conn_id=mysql_conn_id)
 
         # 2. Define os campos de destino a partir das colunas do DataFrame
         target_fields = df_final.columns.tolist()

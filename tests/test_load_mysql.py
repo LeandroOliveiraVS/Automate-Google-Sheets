@@ -18,7 +18,7 @@ def test_load_data(mocker):
 
     # Simulando o hook do Airflow
     mock_hook_instance = mocker.MagicMock()
-    mock_mysql_hook_class = mocker.patch("src.load.MySQLHook", autospec=True)
+    mock_mysql_hook_class = mocker.patch("src.load.MySqlHook", autospec=True)
     mock_mysql_hook_class.return_value = mock_hook_instance
 
     # Executando a def de load_data_to_mssql
