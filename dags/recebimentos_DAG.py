@@ -15,11 +15,11 @@ CONFIG_FILE_PATH = "/opt/airflow/config/sheets_config.json"
 
 @dag(
     dag_id="processar_recebimentos_final",
-    description="Processa dados do Google Sheets para o MySQL",
+    description="Processa dados do Google Sheets para o mssql",
     schedule="@daily",
     start_date=pendulum.datetime(2025, 7, 9, tz="America/Recife"),
     catchup=False,
-    tags=["sheets", "mysql"],
+    tags=["sheets", "mssql"],
 )
 def dag_processar_recebimentos():
 

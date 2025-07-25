@@ -1,8 +1,8 @@
 import logging
-
 import pandas as pd
 import pendulum
 from airflow.providers.microsoft.mssql.hooks.mssql import MsSqlHook
+from airflow.providers.mysql.hooks.mysql import MySQLHook
 
 
 # ========================================================================
@@ -97,62 +97,68 @@ def update_sql_mssql(
 #                      ATUALIZAR BANCO MYSQL                             #
 # ========================================================================
 def update_sql_mysql(
-    mssql_conn_id: str, sheet_config: dict, df_transformado: pd.DataFrame
+    mysql_conn_id: str, sheet_config: dict, df_transformado: pd.DataFrame
 ):
     # Variaveis do sheet.
-    mysql_table = sheet_config["mysql_table"]
-    update_cols = sheet_config["update_cols"]
+    main_table = sheet_config["table"]
     key_column = sheet_config["key_column"]
 
     # Pega todas as colunas do DataFrame para o insert
     all_cols = df_transformado.columns.tolist()
+    # Colunas a serem comparadas e atualizadas
+    update_cols = [col for col in all_cols if col != key_column]
 
     if df_transformado.empty:
         logging.info(
-            f"DataFrame vazio. Nenhuma operação de upsert para a tabela '{mysql_table}'."
+            f"DataFrame vazio. Nenhuma operação de upsert para a tabela '{main_table}'."
         )
         return
 
+    staging_table_name = f"staging_{main_table}_{int(pendulum.now().timestamp())}"
+    hook = MySQLHook(mysql_conn_id=mysql_conn_id)
+    engine = hook.get_sqlalchemy_engine()
+
     logging.info(
-        f"Iniciando operação de UPSERT para {len(df_transformado)} registros na tabela '{mysql_table}'."
+        f"Iniciando sincronização para {len(df_transformado)} registros na tabela '{main_table}' via staging."
     )
 
     try:
-        # Conexão
-        hook = mssql_conn_id(mssql_conn_id=mssql_conn_id)
-
-        # Prepara os dados para inserção, convertendo nulos do pandas para None do Python
-        rows_to_insert = df_transformado.replace({pd.NA: None}).values.tolist()
-
-        # --- Montagem da Query SQL ---
-
-        # Cláusula de colunas para o INSERT: `(col1, col2, col3)`
-        insert_clause = ", ".join([f"`{col}`" for col in all_cols])
-
-        # Placeholders para os valores: `(%s, %s, %s)`
-        value_placeholders = ", ".join(["%s"] * len(all_cols))
-
-        # Cláusula de atualização para o ON DUPLICATE KEY: `col2 = VALUES(col2), col3 = VALUES(col3)`
-        update_clause = ", ".join(
-            [f"`{col}` = VALUES(`{col}`)" for col in update_cols if col != key_column]
+        # --- Passo 1: Carregar dados para a tabela de staging ---
+        df_transformado.to_sql(
+            staging_table_name,
+            con=engine,
+            index=False,
+            if_exists="replace",
+            chunksize=1000,
         )
-
-        # CORREÇÃO 2: Remover a key_column da cláusula ON DUPLICATE KEY
-        sql_upsert_query = f"""
-            INSERT INTO `{mysql_table}` ({insert_clause})
-            VALUES ({value_placeholders})
-            ON DUPLICATE KEY UPDATE {update_clause}
-        """
-
-        # Executa a query para todas as linhas de uma só vez
-        hook.run(sql_upsert_query, parameters=rows_to_insert)
-
         logging.info(
-            f"Operação de UPSERT concluída com sucesso para a tabela '{mysql_table}'."
+            f"Dados carregados para a tabela de staging '{staging_table_name}'."
         )
+
+        # --- Passo 2: UPDATE Inteligente (apenas linhas que mudaram) ---
+
+        # Cria a cláusula SET: T.`col1` = S.`col1`, T.`col2` = S.`col2`, ...
+        update_set_clause = ", ".join([f"T.`{col}` = S.`{col}`" for col in update_cols])
+
+        # Cria a cláusula WHERE para comparar cada coluna.
+        where_clause = " OR ".join(
+            [f"NOT (T.`{col}` <=> S.`{col}`)" for col in update_cols]
+        )
+
+        # --- QUERY DE UPDATE ---
+        sql_update_query = f"""
+            UPDATE `{main_table}` T JOIN `{staging_table_name}` S
+            ON T.`{key_column}` = S.`{key_column}`
+            SET {update_set_clause}
+            WHERE {where_clause} """
+
+        logging.info("Executando UPDATE para as linhas que foram alteradas...")
+        hook.run(sql_update_query)
 
     except Exception as e:
-        logging.error(
-            f"Erro durante a operação de UPSERT para a tabela '{mysql_table}': {e}"
-        )
+        logging.error(f"Erro durante a sincronização para a tabela '{main_table}': {e}")
         raise
+    finally:
+        # --- Passo 4: Limpar a tabela de staging ---
+        logging.info(f"Limpando e removendo a tabela de staging: {staging_table_name}")
+        hook.run(f"DROP TABLE IF EXISTS `{staging_table_name}`")
