@@ -19,7 +19,7 @@ def compare_data(
         hook = MsSqlHook(mssql_conn_id=mssql_conn_id)
 
         # 1. Captar a linha com a ultima entrada
-        date_query = f"SELECT MAX({key_column}) FROM {table}"
+        date_query = f"SELECT MAX([{key_column}]) FROM [{table}]"
         result = hook.get_first(sql=date_query)
 
         # 2. Tratar o caso da tabela estar vazia ou a consulta não retornar nada

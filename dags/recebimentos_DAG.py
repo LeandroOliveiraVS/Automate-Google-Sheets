@@ -71,12 +71,12 @@ def dag_processar_recebimentos():
     extracted_df = extract_data_task(sheet_config=config)
     transformed_df = transform_data_task(df_extraido=extracted_df, sheet_config=config)
     final_df = compare_data_task(
-        mssql_conn_id="mssql_default",
+        mssql_conn_id="mssql_local_windows",
         sheet_config=config,
         df_transformado=transformed_df,
     )
     load_data_task(
-        mssql_conn_id="mssql_default", sheet_config=config, df_final=final_df
+        mssql_conn_id="mssql_local_windows", sheet_config=config, df_final=final_df
     )
 
 
