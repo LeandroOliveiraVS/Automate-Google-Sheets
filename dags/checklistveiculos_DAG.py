@@ -13,21 +13,21 @@ CONFIG_FILE_PATH = "/opt/airflow/config/sheets_config.json"
 
 
 @dag(
-    dag_id="processar_recebimentos_final",
+    dag_id="processar_checklistveiculos_final",
     description="Processa dados do Google Sheets para o mssql",
     schedule="@daily",
     start_date=pendulum.datetime(2025, 7, 9, tz="America/Recife"),
     catchup=False,
     tags=["sheets", "mssql"],
 )
-def dag_processar_recebimentos():
+def dag_processar_checklistveiculos():
 
     @task
     def get_sheets_config() -> dict:
         with open(CONFIG_FILE_PATH, "r") as f:
             sheets_config = json.load(f)
 
-        return sheets_config[0]
+        return sheets_config[1]
 
     @task
     def extract_data_task(sheet_config: dict) -> pd.DataFrame:
@@ -80,4 +80,4 @@ def dag_processar_recebimentos():
 
 
 # Instancia a DAG para que o Airflow possa encontrá-la
-dag_processar_recebimentos()
+dag_processar_checklistveiculos()

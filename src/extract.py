@@ -29,7 +29,19 @@ def fetch_data(gcp_conn_id: str, sheet_config: dict) -> pd.DataFrame:
         )
         sheet = client.open_by_key(sheet_id).worksheet(worksheet_name)
         data = sheet.get_all_records()
-        df = pd.DataFrame(data)
+        if not data:
+            # Se não há dados, busca a primeira linha (cabeçalho)
+            headers = sheet.row_values(1)
+            logging.warning(
+                f"A planilha '{worksheet_name}' não tem linhas de dados. Criando DataFrame vazio com os cabeçalhos: {headers}"
+            )
+            # Cria um DataFrame vazio, mas com as colunas corretas
+            df = pd.DataFrame(columns=headers)
+        else:
+            # Se há dados, o comportamento continua o mesmo de antes
+            df = pd.DataFrame(data)
+
+        logging.info(f"Colunas: {df.columns}, linhas: {len(df)}")
 
         # Saída do resultado para o próximo passo.
         for col in df.columns:
